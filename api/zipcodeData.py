@@ -39,16 +39,16 @@ def findRepresentative(url, zip_code):
             "zip_code" : zip_code
         }
 
-        for key, value in zip_info.items():
-            print(f"{key} : {value}")
+        return zip_info
 
 def main():
 
     zip_code = input("Enter the zip code: ")
     url = "https://ziplook.house.gov/htbin/findrep_house?ZIP=" + zip_code
     findRepresentative(url, zip_code)
+if __name__ == "__main__":
+    main()
 
-main()
 
 
     

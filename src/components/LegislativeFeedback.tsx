@@ -1,186 +1,69 @@
-// 'use client'
-// import React, { useState } from 'react';
-// import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
-// import { Button } from './ui/Button';
-// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
-// import { Loader2, Copy, CheckCircle } from 'lucide-react';
-
-// const LegislativeFeedback = () => {
-//   const [state, setState] = useState('');
-//   const [representative, setRepresentative] = useState('');
-//   const [loading, setLoading] = useState(false);
-//   const [generatedEmail, setGeneratedEmail] = useState('');
-//   const [copied, setCopied] = useState(false);
-
-//   // Mock data for demo
-//   const mockStates = ['California', 'New York', 'Texas'];
-//   const mockRepresentatives = ['John Doe', 'Jane Smith', 'Bob Johnson'];
-//   const mockDonorData = {
-//     topDonors: ['Energy Corp', 'Tech Inc', 'Finance LLC'],
-//     totalDonations: '$1.2M'
-//   };
-
-//   const handleGenerateEmail = async () => {
-//     setLoading(true);
-//     // Simulate API call
-//     setTimeout(() => {
-//       setGeneratedEmail(
-//         "Dear Representative,\n\nI am writing regarding your recent vote on..."
-//       );
-//       setLoading(false);
-//     }, 1500);
-//   };
-
-//   const handleCopy = () => {
-//     navigator.clipboard.writeText(generatedEmail);
-//     setCopied(true);
-//     setTimeout(() => setCopied(false), 2000);
-//   };
-
-//   return (
-//     //<div className="bg-[url('/assets/img1.png')] ">
-//     <div className="max-w-4xl py-20 mx-auto p-4 space-y-4 bg-opacity-20">
-//       {/* Selection Section */}
-//       <Card>
-//         <CardHeader>
-//           <CardTitle>Generate Representative Feedback</CardTitle>
-//         </CardHeader>
-//         <CardContent className="space-y-4">
-//           <div className="space-y-2">
-//             <label className="text-xl font-bold">Michigan State</label>
-//           </div>
-
-//           <div className="space-y-2">
-//             <label className="text-sm font-medium">Select Representative</label>
-//             <Select 
-//               value={representative} 
-//               onValueChange={setRepresentative}
-//               disabled={!state}
-//             >
-//               <SelectTrigger>
-//                 <SelectValue placeholder="Choose a representative" />
-//               </SelectTrigger>
-//               <SelectContent>
-//                 {mockRepresentatives.map(r => (
-//                   <SelectItem key={r} value={r}>{r}</SelectItem>
-//                 ))}
-//               </SelectContent>
-//             </Select>
-//           </div>
-//         </CardContent>
-//       </Card>
-
-//       {/* Donor Information */}
-//       {representative && (
-//         <Card>
-//           <CardHeader>
-//             <CardTitle>Donor Information</CardTitle>
-//           </CardHeader>
-//           <CardContent>
-//             <div className="space-y-2">
-//               <p className="text-sm font-medium">Top Donors:</p>
-//               <ul className="list-disc pl-5">
-//                 {mockDonorData.topDonors.map(donor => (
-//                   <li key={donor} className="text-sm">{donor}</li>
-//                 ))}
-//               </ul>
-//               <p className="text-sm mt-2">
-//                 Total Donations: {mockDonorData.totalDonations}
-//               </p>
-//             </div>
-//           </CardContent>
-//         </Card>
-//       )}
-
-//       {/* Email Generation */}
-//       <Card>
-//         <CardHeader>
-//           <CardTitle>Generated Email</CardTitle>
-//         </CardHeader>
-//         <CardContent className="space-y-4">
-//           <Button 
-//             onClick={handleGenerateEmail} 
-//             disabled={!representative || loading}
-//             className="w-full bg-black text-white"
-//           >
-//             {loading ? (
-//               <>
-//                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-//                 Generating...
-//               </>
-//             ) : (
-//               'Generate Email'
-//             )}
-//           </Button>
-
-//           {generatedEmail && (
-//             <div className="space-y-2">
-//               <div className="relative">
-//                 <textarea 
-//                   className="w-full h-48 p-3 border rounded-md" 
-//                   value={generatedEmail}
-//                   readOnly
-//                 />
-//                 <Button
-//                   onClick={handleCopy}
-//                   variant="outline"
-//                   size="icon"
-//                   className="absolute top-2 right-2"
-//                 >
-//                   {copied ? (
-//                     <CheckCircle className="h-4 w-4" />
-//                   ) : (
-//                     <Copy className="h-4 w-4" />
-//                   )}
-//                 </Button>
-//               </div>
-//             </div>
-//           )}
-//         </CardContent>
-//       </Card>
-//     </div>
-//    // </div>
-//   );
-// };
-
-// export default LegislativeFeedback;
-
-
 'use client'
-import React, { useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Button } from './ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { Loader2, Copy, CheckCircle } from 'lucide-react';
 
 const LegislativeFeedback = () => {
-  const [state, setState] = useState('');
+  const [repList, setRepList] = useState([]);
+  const [repInfo, setRepInfo] = useState(undefined);
+  const [repSummary, setRepSummary] = useState(undefined);
   const [representative, setRepresentative] = useState('');
   const [loading, setLoading] = useState(false);
   const [generatedEmail, setGeneratedEmail] = useState('');
   const [copied, setCopied] = useState(false);
   const [searchQuery, setSearchQuery] = useState(''); // Search query state
 
-  // Mock data for demo
-  const mockStates = ['California', 'New York', 'Texas'];
-  const mockRepresentatives = ['John Doe', 'Jane Smith', 'Bob Johnson'];
+  useEffect(() => {
+    fetch("http://localhost:8080/api/representativeList").then((response) => response.json().then((data) => {
+      setRepList(data.reps)
+    }))
+  }, [])
 
-  const mockDonorData = {
-    topDonors: ['Energy Corp', 'Tech Inc', 'Finance LLC'],
-    totalDonations: '$1.2M'
-  };
+  useEffect(() => {
+    if (representative == "") { return }
+    fetch("http://localhost:8080/api/representativeInfo", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ "name": representative })
+    }).then((response) => response.json()).then((data) => {
+      setRepInfo(data)
+    })
+    fetch("http://localhost:8080/api/representativeSummary", {
+      method: 'POST',
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ "name": representative })
+    }).then((response) => response.json()).then((data) => {
+      setRepSummary(data.email)
+    })
+  }, [representative])
 
   // Filter representatives based on search query
-  const filteredRepresentatives = mockRepresentatives.filter((representative) =>
-    representative.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredRepresentatives = useMemo(() => repList.filter(
+    (representative) => representative.toLowerCase().includes(searchQuery.toLowerCase())
+  ), [repList, searchQuery]);
 
   const handleGenerateEmail = async () => {
     setLoading(true);
     setTimeout(() => {
-      setGeneratedEmail(
-        "Dear Representative,\n\nI am writing regarding your recent vote on..."
-      );
+
+      fetch("http://localhost:8080/api/representativeEmail", {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ "name": representative })
+      }).then((response) => response.json()).then((data) => {
+        setGeneratedEmail(data.email)
+      })
       setLoading(false);
     }, 1500);
   };
@@ -214,23 +97,20 @@ const LegislativeFeedback = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
             {/* Select dropdown with filtered suggestions */}
-            <Select 
-              value={representative} 
+            <Select
+              value={representative}
               onValueChange={setRepresentative}
-              disabled={!state}
               className="border-2 border-orange-500"
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose a representative" />
               </SelectTrigger>
               <SelectContent>
-                {filteredRepresentatives.length > 0 ? (
-                  filteredRepresentatives.map(r => (
-                    <SelectItem key={r} value={r}>{r}</SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value="" disabled>No representatives found</SelectItem>
-                )}
+                {
+                  filteredRepresentatives.map(r =>
+                    <SelectItem key={r} value={r.toString()}>{r}</SelectItem>
+                  )
+                }
               </SelectContent>
             </Select>
           </div>
@@ -241,20 +121,24 @@ const LegislativeFeedback = () => {
       {representative && (
         <Card>
           <CardHeader>
-            <CardTitle>Donor Information</CardTitle>
+            <CardTitle>Voting Information</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Top Donors:</p>
-              <ul className="list-disc pl-5">
-                {mockDonorData.topDonors.map(donor => (
-                  <li key={donor} className="text-sm">{donor}</li>
-                ))}
-              </ul>
-              <p className="text-sm mt-2">
-                Total Donations: {mockDonorData.totalDonations}
-              </p>
-            </div>
+            {
+              repInfo == undefined ? null : (
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">{`${repInfo["rep-type"]} ${repInfo.name} (${repInfo.party})`}</p>
+                  <ul className="list-disc pl-5">
+                    {repInfo.bills.map(bill => (
+                      <li key={bill.name} className="text-sm">{`${bill.name}: ${bill.vote} (${bill.result})`}</li>
+                    ))}
+                  </ul>
+                  <p className="text-sm mt-2">
+                    {repSummary == undefined ? null : repSummary}
+                  </p>
+                </div>
+              )
+            }
           </CardContent>
         </Card>
       )}
@@ -265,8 +149,8 @@ const LegislativeFeedback = () => {
           <CardTitle>Generated Email</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
-          <Button 
-            onClick={handleGenerateEmail} 
+          <Button
+            onClick={handleGenerateEmail}
             disabled={!representative || loading}
             className="w-full bg-black text-white"
           >
@@ -283,8 +167,8 @@ const LegislativeFeedback = () => {
           {generatedEmail && (
             <div className="space-y-2">
               <div className="relative">
-                <textarea 
-                  className="w-full h-48 p-3 border rounded-md" 
+                <textarea
+                  className="w-full h-48 p-3 border rounded-md"
                   value={generatedEmail}
                   readOnly
                 />
