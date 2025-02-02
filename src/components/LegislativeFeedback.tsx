@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Button } from './ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { Loader2, Copy, CheckCircle, Heading1, Heading3 } from 'lucide-react';
-import gju from "geojson-utils"
+import gju from "geojson-utils";
 
 type repInfoType = {
   "rep-type": string;
@@ -19,10 +19,21 @@ type repInfoType = {
   }[]
 } | undefined
 
-let houseGeo;
+type geoType = {
+  features: {
+    geometry: {
+      coordinates: number[][]
+    }
+    properties: {
+      LABEL: string;
+    }
+  }[];
+}
+
+let houseGeo: geoType;
 await fetch("https://gisagocss.state.mi.us/arcgis/rest/services/OpenData/michigan_geographic_framework/MapServer/17/query?outFields=*&where=1%3D1&f=geojson").then((response) => response.json()).then((data) => { houseGeo = data })
 
-let senateGeo;
+let senateGeo: geoType;
 await fetch("https://gisagocss.state.mi.us/arcgis/rest/services/OpenData/michigan_geographic_framework/MapServer/16/query?outFields=*&where=1%3D1&f=geojson").then((response) => response.json()).then((data) => { senateGeo = data })
 
 function postSet(representative: string, endpoint: string, setter: Function) {
@@ -45,7 +56,7 @@ function nameFilter(repList: string[], searchQuery: string) {
   )
 }
 
-function addressFilter(repList: string[], addressResult: string[]) {
+function addressFilter(repList: string[], addressResult?: string[]) {
   if (addressResult == undefined) { return repList }
   console.log(addressResult)
   return repList.filter((representative: string) => {
@@ -93,7 +104,7 @@ const LegislativeFeedback = () => {
   const [searchQuery, setSearchQuery] = useState(''); // Search query state
   const [representative, setRepresentative] = useState('');
   const [addressString, setAddressString] = useState('');
-  const [addressResult, setAddressResult] = useState();
+  const [addressResult, setAddressResult] = useState<string[] | undefined>(undefined);
 
   useEffect(() => {
     if (addressString == "") { setAddressResult(undefined) }
