@@ -29,14 +29,14 @@ const LegislativeFeedback = () => {
   const [searchQuery, setSearchQuery] = useState(''); // Search query state
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/representativeList").then((response) => response.json().then((data) => {
+    fetch("http://127.0.0.1:8080/api/representativeList").then((response) => response.json().then((data) => {
       setRepList(data.reps)
     }))
   }, [])
 
   useEffect(() => {
     if (representative == "") { return }
-    fetch("http://localhost:8080/api/representativeInfo", {
+    fetch("http://127.0.0.1:8080/api/representativeInfo", {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -46,7 +46,7 @@ const LegislativeFeedback = () => {
     }).then((response) => response.json()).then((data) => {
       setRepInfo(data)
     })
-    fetch("http://localhost:8080/api/representativeSummary", {
+    fetch("http://127.0.0.1:8080/api/representativeSummary", {
       method: 'POST',
       headers: {
         'Accept': 'application/json',
@@ -67,7 +67,7 @@ const LegislativeFeedback = () => {
     setLoading(true);
     setTimeout(() => {
 
-      fetch("http://localhost:8080/api/representativeEmail", {
+      fetch("http://127.0.0.1:8080/api/representativeEmail", {
         method: 'POST',
         headers: {
           'Accept': 'application/json',

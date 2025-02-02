@@ -65,4 +65,4 @@ def get_repEmail():
     return json.dumps({"email": completion.choices[0].message.content})
 
 if __name__ == "__main__":
-    app.run(port=8080)
+    app.run(host="127.0.0.1", port=8080)
