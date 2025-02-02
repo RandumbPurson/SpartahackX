@@ -18,11 +18,6 @@ type repInfoType = {
   }[]
 } | undefined
 
-type zipResultType = {
-  first_name: string;
-  last_name: string;
-} | undefined
-
 function postSet(representative: string, endpoint: string, setter: Function) {
   if (representative == "") { return }
   fetch(`http://localhost:8080/api/${endpoint}`, {
@@ -100,15 +95,6 @@ const LegislativeFeedback = () => {
           </div>
 
           <div className="space-y-2">
-
-            <label className="text-sm font-medium">Select by zipcode</label>
-            <input
-              type="text"
-              className="border-2 border-orange-500 p-2 rounded-md w-full mb-4"
-              placeholder="Search by Zipcode"
-              value={zipQuery}
-              onChange={(e) => setZipQuery(e.target.value)}
-            />
             <label className="text-sm font-medium">Select Representative</label>
             {/* Add search input for filtering */}
             <input
