@@ -5,9 +5,22 @@ import { Button } from './ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { Loader2, Copy, CheckCircle } from 'lucide-react';
 
+type repInfoType = {
+  "rep-type": string;
+  name: string;
+  party: string;
+  district: string;
+  bills: {
+    name: string;
+    description: string;
+    vote: string;
+    result: string;
+  }[]
+} | undefined
+
 const LegislativeFeedback = () => {
   const [repList, setRepList] = useState([]);
-  const [repInfo, setRepInfo] = useState(undefined);
+  const [repInfo, setRepInfo] = useState<repInfoType>(undefined);
   const [repSummary, setRepSummary] = useState(undefined);
   const [representative, setRepresentative] = useState('');
   const [loading, setLoading] = useState(false);
@@ -47,7 +60,7 @@ const LegislativeFeedback = () => {
 
   // Filter representatives based on search query
   const filteredRepresentatives = useMemo(() => repList.filter(
-    (representative) => representative.toLowerCase().includes(searchQuery.toLowerCase())
+    (representative: string) => representative.toLowerCase().includes(searchQuery.toLowerCase())
   ), [repList, searchQuery]);
 
   const handleGenerateEmail = async () => {
@@ -100,7 +113,6 @@ const LegislativeFeedback = () => {
             <Select
               value={representative}
               onValueChange={setRepresentative}
-              className="border-2 border-orange-500"
             >
               <SelectTrigger>
                 <SelectValue placeholder="Choose a representative" />
@@ -108,7 +120,7 @@ const LegislativeFeedback = () => {
               <SelectContent>
                 {
                   filteredRepresentatives.map(r =>
-                    <SelectItem key={r} value={r.toString()}>{r}</SelectItem>
+                    <SelectItem key={r} value={r}>{r}</SelectItem>
                   )
                 }
               </SelectContent>
