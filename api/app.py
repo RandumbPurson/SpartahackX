@@ -20,7 +20,7 @@ repslist = list(set([ rep["name"] for rep in votesdb.legislators.find({}) ]))
 aiClient = OpenAI()
 
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
 
 @app.route("/api/representativeList")
 def get_representatives():
