@@ -55,8 +55,24 @@ export default {
   			lg: 'var(--radius)',
   			md: 'calc(var(--radius) - 2px)',
   			sm: 'calc(var(--radius) - 4px)'
-  		}
-  	}
+  		},
+		animation: {
+			'slide-in': 'slideIn 1s ease-out forwards',
+		},
+		keyframes: {
+			slideIn: {
+			  '0%': {
+				transform: 'translateX(-100%)',
+				opacity: '0',
+			  },
+			  '100%': {
+				transform: 'translateX(0)',
+				opacity: '1',
+			  },
+			},
+		  },
+
+  	},
   },
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   plugins: [require("tailwindcss-animate")],

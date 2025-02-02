@@ -38,7 +38,8 @@ const LegislativeFeedback = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-4 space-y-4">
+    //<div className="bg-[url('/assets/img1.png')] ">
+    <div className="max-w-4xl py-20 mx-auto p-4 space-y-4 bg-opacity-20">
       {/* Selection Section */}
       <Card>
         <CardHeader>
@@ -46,17 +47,7 @@ const LegislativeFeedback = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">Select State</label>
-            <Select value={state} onValueChange={setState}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a state" />
-              </SelectTrigger>
-              <SelectContent>
-                {mockStates.map(s => (
-                  <SelectItem key={s} value={s}>{s}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <label className="text-xl font-bold">Michigan State</label>
           </div>
 
           <div className="space-y-2">
@@ -110,7 +101,7 @@ const LegislativeFeedback = () => {
           <Button 
             onClick={handleGenerateEmail} 
             disabled={!representative || loading}
-            className="w-full"
+            className="w-full bg-black text-white"
           >
             {loading ? (
               <>
@@ -148,6 +139,7 @@ const LegislativeFeedback = () => {
         </CardContent>
       </Card>
     </div>
+   // </div>
   );
 };
 
