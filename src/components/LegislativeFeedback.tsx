@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Button } from './ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
 import { Loader2, Copy, CheckCircle, Heading1, Heading3 } from 'lucide-react';
+// @ts-ignore
 import gju from "geojson-utils";
 
 type repInfoType = {
