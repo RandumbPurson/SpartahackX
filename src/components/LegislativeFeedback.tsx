@@ -18,65 +18,65 @@ type repInfoType = {
   }[]
 } | undefined
 
-const LegislativeFeedback = () => {
-  const [repList, setRepList] = useState([]);
-  const [repInfo, setRepInfo] = useState<repInfoType>(undefined);
-  const [repSummary, setRepSummary] = useState(undefined);
-  const [representative, setRepresentative] = useState('');
-  const [loading, setLoading] = useState(false);
-  const [generatedEmail, setGeneratedEmail] = useState('');
-  const [copied, setCopied] = useState(false);
-  const [searchQuery, setSearchQuery] = useState(''); // Search query state
+type zipResultType = {
+  first_name: string;
+  last_name: string;
+} | undefined
 
+function postSet(representative: string, endpoint: string, setter: Function) {
+  if (representative == "") { return }
+  fetch(`http://localhost:8080/api/${endpoint}`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ "name": representative })
+  }).then((response) => response.json()).then((data) => {
+    setter(data.payload)
+  })
+}
+
+function nameFilter(repList: string[], searchQuery: string) {
+  return repList.filter((representative: string) =>
+    representative.toLowerCase().includes(searchQuery.toLowerCase())
+  )
+}
+
+const LegislativeFeedback = () => {
+
+  // repList/search state
+  const [repList, setRepList] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState(''); // Search query state
+  const [representative, setRepresentative] = useState('');
+
+  // Load repList at startup
   useEffect(() => {
-    fetch("http://127.0.0.1:8080/api/representativeList").then((response) => response.json().then((data) => {
+    fetch("http://localhost:8080/api/representativeList").then((response) => response.json().then((data) => {
       setRepList(data.reps)
     }))
   }, [])
 
-  useEffect(() => {
-    if (representative == "") { return }
-    fetch("http://127.0.0.1:8080/api/representativeInfo", {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ "name": representative })
-    }).then((response) => response.json()).then((data) => {
-      setRepInfo(data)
-    })
-    fetch("http://127.0.0.1:8080/api/representativeSummary", {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ "name": representative })
-    }).then((response) => response.json()).then((data) => {
-      setRepSummary(data.email)
-    })
-  }, [representative])
+  // Filter representatives based on search and zip query
+  const filteredRepresentatives = useMemo(() => nameFilter(repList, searchQuery), [repList, searchQuery]);
 
-  // Filter representatives based on search query
-  const filteredRepresentatives = useMemo(() => repList.filter(
-    (representative: string) => representative.toLowerCase().includes(searchQuery.toLowerCase())
-  ), [repList, searchQuery]);
+  // Rep info/summary/email state
+  const [repInfo, setRepInfo] = useState<repInfoType>(undefined);
+  const [repSummary, setRepSummary] = useState(undefined);
+  const [loading, setLoading] = useState(false);
+  const [generatedEmail, setGeneratedEmail] = useState('');
+  const [copied, setCopied] = useState(false);
+
+  // On "representative" change, set info and summarry
+  useEffect(() => {
+    postSet(representative, "representativeInfo", setRepInfo)
+    postSet(representative, "representativeSummary", setRepSummary)
+  }, [representative])
 
   const handleGenerateEmail = async () => {
     setLoading(true);
     setTimeout(() => {
-
-      fetch("http://127.0.0.1:8080/api/representativeEmail", {
-        method: 'POST',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ "name": representative })
-      }).then((response) => response.json()).then((data) => {
-        setGeneratedEmail(data.email)
-      })
+      postSet(representative, "representativeEmail", setGeneratedEmail)
       setLoading(false);
     }, 1500);
   };
@@ -100,6 +100,15 @@ const LegislativeFeedback = () => {
           </div>
 
           <div className="space-y-2">
+
+            <label className="text-sm font-medium">Select by zipcode</label>
+            <input
+              type="text"
+              className="border-2 border-orange-500 p-2 rounded-md w-full mb-4"
+              placeholder="Search by Zipcode"
+              value={zipQuery}
+              onChange={(e) => setZipQuery(e.target.value)}
+            />
             <label className="text-sm font-medium">Select Representative</label>
             {/* Add search input for filtering */}
             <input

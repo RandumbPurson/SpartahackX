@@ -29,14 +29,16 @@ def get_representatives():
 @app.route("/api/zipcode", methods=["POST"])
 def get_zip():
     baseurl = "https://ziplook.house.gov/htbin/findrep_house?ZIP="
-    return json.dumps(findRepresentative(baseurl + zip_code))
+    zip_info = findRepresentative(baseurl + request.json["zipcode"], request.json["zipcode"])
+    print(zip_info)
+    return json.dumps(zip_info)
 
 @app.route("/api/representativeInfo", methods=["POST"])
 def get_repInfo():
     first, last = request.json["name"].split(" ")
     legislator_info = votesdb.legislators.find({"name": re.compile(f"^{first}.*{last}")}, {"_id": False}).next()
 
-    return json.dumps(legislator_info)
+    return json.dumps({"payload": legislator_info})
 
 @app.route("/api/representativeSummary", methods=["POST"])
 def get_repSummary():
@@ -49,7 +51,7 @@ def get_repSummary():
             {"role": "user", "content": f"I will provide a json object of LEGISLATOR VOTE INFORMATION describing the votes of a specific legislator pertaining to environmental policy. Please generate a summary of these voting behaviors, mentioning a few key bills\nLEGISLATOR VOTE INFORMATION: {json.dumps(legislator_info)}"}
         ]
     )
-    return json.dumps({"email": completion.choices[0].message.content})
+    return json.dumps({"payload": completion.choices[0].message.content})
 
 @app.route("/api/representativeEmail", methods=["POST"])
 def get_repEmail():
@@ -62,7 +64,7 @@ def get_repEmail():
             {"role": "user", "content": f"I will provide a json object of LEGISLATOR VOTE INFORMATION describing the votes of a specific legislator pertaining to environmental policy. Please generate an email commenting on these voting behaviors. Make this email positive if the votes tend to protect the environment and negative if they degrade the environment. Please mention specific bills and actions, write in first person, and write as though speaking directly to the representative using words like 'You' to refer to them\nLEGISLATOR VOTE INFORMATION: {json.dumps(legislator_info)}"}
         ]
     )
-    return json.dumps({"email": completion.choices[0].message.content})
+    return json.dumps({"payload": completion.choices[0].message.content})
 
 if __name__ == "__main__":
-    app.run(host="127.0.0.1", port=8080)
+    app.run(port=8080)
