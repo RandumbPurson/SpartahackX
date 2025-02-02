@@ -3,7 +3,8 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/Card';
 import { Button } from './ui/Button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/Select';
-import { Loader2, Copy, CheckCircle } from 'lucide-react';
+import { Loader2, Copy, CheckCircle, Heading1, Heading3 } from 'lucide-react';
+import gju from "geojson-utils"
 
 type repInfoType = {
   "rep-type": string;
@@ -17,6 +18,12 @@ type repInfoType = {
     result: string;
   }[]
 } | undefined
+
+let houseGeo;
+await fetch("https://gisagocss.state.mi.us/arcgis/rest/services/OpenData/michigan_geographic_framework/MapServer/17/query?outFields=*&where=1%3D1&f=geojson").then((response) => response.json()).then((data) => { houseGeo = data })
+
+let senateGeo;
+await fetch("https://gisagocss.state.mi.us/arcgis/rest/services/OpenData/michigan_geographic_framework/MapServer/16/query?outFields=*&where=1%3D1&f=geojson").then((response) => response.json()).then((data) => { senateGeo = data })
 
 function postSet(representative: string, endpoint: string, setter: Function) {
   if (representative == "") { return }
@@ -38,12 +45,48 @@ function nameFilter(repList: string[], searchQuery: string) {
   )
 }
 
+function addressFilter(repList: string[], addressResult: string[]) {
+  if (addressResult == undefined) { return repList }
+  console.log(addressResult)
+  return repList.filter((representative: string) => {
+    return addressResult.indexOf(representative) != -1
+  })
+}
+
+function searchAddress(addressString: string, setter: Function) {
+  if (!addressString || addressString.length < 3) {
+    console.log("The address string is too short. Enter at least three symbols");
+    return;
+  }
+
+  const myAPIKey = "7e2195d65c0d4cce84817eff0b328774"
+  const geocodingUrl = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(addressString)}&apiKey=${myAPIKey}`;
+
+  // call Geocoding API - https://www.geoapify.com/geocoding-api/
+  fetch(geocodingUrl).then(result => result.json())
+    .then(featureCollection => {
+      let coords = featureCollection.features[0].geometry.coordinates
+      let houseLegislator = houseGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LEGISLATOR })
+
+      let senateLegislator = senateGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LEGISLATOR })
+
+      setter([...senateLegislator, ...houseLegislator])
+    });
+}
+
 const LegislativeFeedback = () => {
 
   // repList/search state
   const [repList, setRepList] = useState<string[]>([]);
   const [searchQuery, setSearchQuery] = useState(''); // Search query state
   const [representative, setRepresentative] = useState('');
+  const [addressString, setAddressString] = useState('');
+  const [addressResult, setAddressResult] = useState();
+
+  useEffect(() => {
+    if (addressString == "") { setAddressResult(undefined) }
+
+  }, [addressString])
 
   // Load repList at startup
   useEffect(() => {
@@ -53,7 +96,7 @@ const LegislativeFeedback = () => {
   }, [])
 
   // Filter representatives based on search and zip query
-  const filteredRepresentatives = useMemo(() => nameFilter(repList, searchQuery), [repList, searchQuery]);
+  const filteredRepresentatives = useMemo(() => addressFilter(nameFilter(repList, searchQuery), addressResult), [repList, searchQuery, addressResult]);
 
   // Rep info/summary/email state
   const [repInfo, setRepInfo] = useState<repInfoType>(undefined);
@@ -95,6 +138,23 @@ const LegislativeFeedback = () => {
           </div>
 
           <div className="space-y-2">
+            <div>
+              <label className="text-sm font-medium">Search by Address</label>
+              <input
+                type="text"
+                className="border-2 border-orange-500 p-2 rounded-md w-full mb-4"
+                placeholder="Search by Address"
+                value={addressString}
+                onChange={(e) => setAddressString(e.target.value)}
+              />
+              {
+                addressResult == undefined ? null :
+                  <h3>{addressResult.join(", ")}</h3>
+              }
+              <Button onClick={() => searchAddress(addressString, setAddressResult)}>Search</Button>
+            </div>
+
+
             <label className="text-sm font-medium">Select Representative</label>
             {/* Add search input for filtering */}
             <input
