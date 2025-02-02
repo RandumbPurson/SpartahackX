@@ -15,7 +15,7 @@ uri = "mongodb+srv://randumbemma:5QugXWcGA1Mc8VWb@cluster0.okues.mongodb.net/?re
 dbClient = pymongo.MongoClient(uri, server_api=pymongo.server_api.ServerApi(version="1", strict=True, deprecation_errors=True))
 repsdb = dbClient.reps_db
 votesdb = dbClient.vote_db
-repslist = list(set([ f"{rep['first_name']} {rep['last_name']}" for rep in repsdb.reps.find({}) ]))
+repslist = list(set([ rep["name"] for rep in votesdb.legislators.find({}) ]))
 
 aiClient = OpenAI()
 
@@ -25,6 +25,20 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 @app.route("/api/representativeList")
 def get_representatives():
     return json.dumps({"reps": repslist})
+
+@app.route("/api/legislatorsFromDistricts", methods=["POST"])
+def get_legislators():
+    print(request.json)
+    senator = votesdb.legislators.find({
+        "rep-type": "Sen.",
+        "district": request.json["senate"].lstrip("0")
+    }).next()
+    rep = votesdb.legislators.find({
+        "rep-type": "Rep.",
+        "district": request.json["house"].lstrip("0")
+    }).next()
+    return json.dumps({"payload": [rep["name"], senator["name"]]})
+
 
 @app.route("/api/zipcode", methods=["POST"])
 def get_zip():

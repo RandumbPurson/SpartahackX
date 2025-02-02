@@ -66,11 +66,23 @@ function searchAddress(addressString: string, setter: Function) {
   fetch(geocodingUrl).then(result => result.json())
     .then(featureCollection => {
       let coords = featureCollection.features[0].geometry.coordinates
-      let houseLegislator = houseGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LEGISLATOR })
+      let houseDistrict = houseGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LABEL })
 
-      let senateLegislator = senateGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LEGISLATOR })
+      let senateDistrict = senateGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LABEL })
 
-      setter([...senateLegislator, ...houseLegislator])
+      return { "senate": senateDistrict[0], "house": houseDistrict[0] }
+    }).then((data) => {
+      fetch(`http://localhost:8080/api/legislatorsFromDistricts`, {
+        method: 'POST',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+      }).then((response) => response.json()).then((data) => {
+        console.log(data.payload)
+        setter(data.payload)
+      })
     });
 }
 

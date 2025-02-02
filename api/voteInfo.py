@@ -43,7 +43,10 @@ def getLegislators():
     legislators = db.legislators
     baseurl = "https://www.michiganvotes.org"
     soup = BeautifulSoup(requests.get(baseurl + "/legislators/2025").content)
-    legislator_objects = soup.find("ul", class_="official-list").find_all("a")
+    legislator_objects = []
+    for legislator_obj in soup.find_all("ul", class_="official-list"):
+        legislator_objects.extend(legislator_obj.find_all("a"))
+
     for legislator in legislator_objects:
         soup = BeautifulSoup(requests.get(baseurl + legislator["href"]).content)
         # terms = [ list(filter(lambda val: val != "\n" and val != " ", term.contents)) for term in soup.find("div", class_="terms-in-office").find_all("li")]
