@@ -76,10 +76,10 @@ function searchAddress(addressString: string, setter: Function) {
   // call Geocoding API - https://www.geoapify.com/geocoding-api/
   fetch(geocodingUrl).then(result => result.json())
     .then(featureCollection => {
-      let coords = featureCollection.features[0].geometry.coordinates
-      let houseDistrict = houseGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LABEL })
+      const coords = featureCollection.features[0].geometry.coordinates
+      const houseDistrict = houseGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LABEL })
 
-      let senateDistrict = senateGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LABEL })
+      const senateDistrict = senateGeo.features.filter((poly) => gju.pointInPolygon({ "type": "Point", "coordinates": coords }, { "type": "Polygon", "coordinates": poly.geometry.coordinates })).map((obj) => { return obj.properties.LABEL })
 
       return { "senate": senateDistrict[0], "house": houseDistrict[0] }
     }).then((data) => {
