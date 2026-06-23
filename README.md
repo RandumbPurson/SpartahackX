@@ -1,4 +1,12 @@
+# PoliAid
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+
+## Demo video
+https://drive.google.com/file/d/11SJJ2wg40sU1Iy5aBPhSp31a6bej_pxa/view
+
+## Devpost 
+https://devpost.com/software/poliaid
 
 ## Getting Started
 
